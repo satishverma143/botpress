@@ -116,7 +116,7 @@ export default class ArrayEditor extends Component {
       <Fragment>
         {this.renderItemForm(newItem, null)}
         <hr />
-        {(items || []).map(this.renderItemForm)}
+        {items && items.map(this.renderItemForm)}
       </Fragment>
     )
   }

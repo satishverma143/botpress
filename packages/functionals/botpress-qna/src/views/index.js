@@ -17,10 +17,6 @@ const getInputValue = input => {
 }
 
 class QuestionsEditor extends Component {
-  state = {
-    newItem: ''
-  }
-
   onQuestionChange = (index, onChange) => event => {
     onChange(event.target.value, index)
   }
@@ -34,40 +30,40 @@ class QuestionsEditor extends Component {
     }
   }
 
-  canSave = data => !!data
+  addEmptyQuestion = () => {
+    this.props.onChange([''].concat(this.props.items))
+  }
 
-  renderForm = (data, index, { isDirty, onCreate, onDelete, onChange }) => (
-    <Fragment>
-      {index == null && <h4>New Question</h4>}
-      <FormGroup>
-        <FormControl
-          componentClass="textarea"
-          placeholder="Question"
-          value={data}
-          onChange={this.onQuestionChange(index, onChange)}
-        />
-      </FormGroup>
+  renderForm = (data, index, { onDelete, onChange }) => {
+    if (index == null) {
+      return (
+        <ButtonToolbar>
+          <Button type="button" bsStyle="success" onClick={this.addEmptyQuestion}>
+            Add another question
+          </Button>
+        </ButtonToolbar>
+      )
+    }
 
-      <ButtonToolbar>
-        {index != null && (
+    return (
+      <Fragment>
+        <FormGroup>
+          <FormControl
+            componentClass="textarea"
+            placeholder="Question"
+            value={data}
+            onChange={this.onQuestionChange(index, onChange)}
+          />
+        </FormGroup>
+
+        <ButtonToolbar>
           <Button type="button" bsSize="sm" bsStyle="danger" onClick={() => onDelete(index)}>
             Delete
           </Button>
-        )}
-        {index == null && (
-          <Button
-            type="button"
-            bsSize="sm"
-            bsStyle="success"
-            onClick={onCreate}
-            disabled={!isDirty || !this.canSave(data)}
-          >
-            Add
-          </Button>
-        )}
-      </ButtonToolbar>
-    </Fragment>
-  )
+        </ButtonToolbar>
+      </Fragment>
+    )
+  }
 
   render() {
     return (
@@ -75,7 +71,6 @@ class QuestionsEditor extends Component {
         <Panel.Body>
           <ArrayEditor
             items={this.props.items}
-            newItem={this.state.newItem}
             renderItem={this.renderForm}
             updateState={this.updateState}
             createNewItem={() => ''}
@@ -86,12 +81,14 @@ class QuestionsEditor extends Component {
   }
 }
 
+const cleanupQuestions = questions => questions.map(q => q.trim()).filter(Boolean)
+
 export default class QnaAdmin extends Component {
   createEmptyQuestion() {
     return {
       id: null,
       data: {
-        questions: [],
+        questions: [''],
         answer: '',
         enabled: true
       }
@@ -110,10 +107,15 @@ export default class QnaAdmin extends Component {
   }
 
   onCreate = value => {
-    return this.props.bp.axios.post('/api/botpress-qna/', value.data).then(({ data }) => ({
+    const data = {
+      ...value.data,
+      questions: cleanupQuestions(value.data.questions)
+    }
+    return this.props.bp.axios.post('/api/botpress-qna/', data).then(({ data: id }) => ({
       // update the value with the retrieved ID
-      ...value,
-      id: data
+      id,
+      // and the cleaned data
+      data
     }))
   }
 
@@ -158,7 +160,7 @@ export default class QnaAdmin extends Component {
 
   getFormControlId = (index, suffix) => `form-${index != null ? index : 'new'}-${suffix}`
 
-  canSave = data => !!data.answer && !!data.questions.length
+  canSave = data => !!data.answer && !!cleanupQuestions(data.questions).length
 
   renderForm = ({ data }, index, { isDirty, onCreate, onEdit, onReset, onDelete, onChange }) => (
     <Fragment>
