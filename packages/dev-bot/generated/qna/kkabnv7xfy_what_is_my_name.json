@@ -1,0 +1,11 @@
+{
+  "id": "kkabnv7xfy_what_is_my_name",
+  "data": {
+    "questions": ["What is my name?", "Do you know my name?"],
+    "answer": "",
+    "redirectFlow": "main.flow.json",
+    "redirectNode": "welcome",
+    "action": "redirect",
+    "enabled": true
+  }
+}

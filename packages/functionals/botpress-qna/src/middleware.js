@@ -15,8 +15,12 @@ export const processEvent = async (event, { storage, logger }) => {
     return false
   }
 
-  logger.debug('QnA: replying to recognized question', id)
-  event.reply('#builtin_text', { text: data.answer })
-  // return `true` to prevent further middlewares from capturing the message
-  return true
+  if (data.action === 'text') {
+    logger.debug('QnA: replying to recognized question with plain text answer', id)
+    event.reply('#builtin_text', { text: data.answer })
+    // return `true` to prevent further middlewares from capturing the message
+    return true
+  } else if (data.action === 'redirect') {
+    logger.debug('QnA: replying to recognized question with redirect: UNSUPPORTED YET', id)
+  }
 }
