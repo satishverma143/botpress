@@ -28,8 +28,9 @@ export const processEvent = async (event, { bp, storage, logger }) => {
     // Not sure if it's universal enough for every use-case but
     // I don't see a better alternative as of now
     const stateId = event.sessionId || event.user.id
+    logger.debug('QnA: jumping', stateId, data.redirectFlow, data.redirectNode)
     await bp.dialogEngine.jumpTo(stateId, data.redirectFlow, data.redirectNode)
-    bp.dialogEngine.processMessage(stateId, event)
+    await bp.dialogEngine.processMessage(stateId, event)
     return true
   }
 }
